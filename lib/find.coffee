@@ -143,10 +143,6 @@ exports.file = file = (dirs, args, module, cb) ->
                                 path.join(base, "readme"),
                                 path.join(base, "README"))
 
-
-  filesToTry.push path.join(base, 'index.html')
-  filesToTry.push path.join(base, 'README')
-
   filesToTry = _.flatten filesToTry
   
   # find the first of the `tries` array which actually exists, and return it

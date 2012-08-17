@@ -12,6 +12,7 @@
     "connect-assets": "~2.3.3",
     "async": "~0.1.22",
     "underscore": "~1.3.3",
-    "npm": "~1.1.49"
+    "npm": "~1.1.49",
+    "node-markdown": "~0.1.1"
   }
 }

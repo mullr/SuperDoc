@@ -4,6 +4,8 @@ path = require 'path'
 fs = require 'fs'
 npm = require 'npm'
 _ = require 'underscore'
+markdown = require("node-markdown").Markdown
+
 
 find = require './lib/find'
 
@@ -43,6 +45,16 @@ moduleVisitor = (m) ->
       modules.push m
 
 find.moduleBfs moduleVisitor, (err) ->
+
+
+app.get '/modules/:moduleId', (req, res) ->
+  [moduleName, moduleVersion] = req.params.moduleId.split("@")
+  m = _.find modules, (m) -> m.name    is moduleName and
+                             m.version is moduleVersion
+
+  fs.readFile m.documentationFile, "utf8", (err, data) ->
+    res.send markdown(data)
+
 
 app.get '/modules', (req, res) ->
   result = []
