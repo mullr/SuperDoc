@@ -2,6 +2,10 @@ express = require 'express'
 http = require 'http'
 path = require 'path'
 fs = require 'fs'
+npm = require 'npm'
+_ = require 'underscore'
+
+find = require './lib/find'
 
 app = express()
 public_dir = path.join(__dirname, 'public')
@@ -26,6 +30,33 @@ app.configure 'development', ->
 
 app.get '/', (req, res) ->
   res.render 'index', {}
+
+modules = []
+moduleVisitor = (m) ->
+  return if not m? or not m.path?
+  find.docDirs m, (err, dirs) ->
+
+    return if not dirs?
+
+    find.file dirs, [], m.name, (err, docFile) ->
+      m.documentationFile = docFile
+      modules.push m
+
+find.moduleBfs moduleVisitor, (err) ->
+
+app.get '/modules', (req, res) ->
+  result = []
+  for m in modules
+    result.push
+      name: m.name
+      verison: m.version
+      path: m.path
+      url: "#{m.name}@#{m.version}"
+      documentationFile: m.documentationFile
+
+  res.json result
+
+
 
 http.createServer(app).listen app.get('port'), ->
   console.log "Express server listening on port " + app.get('port')
