@@ -1,6 +1,14 @@
 angular.module 'SuperDoc', ['ngResource']
 
-class window.SuperDocController
-  constructor: ($scope, $resource) ->
-    $scope.moduleList = $resource('/modules').get()
+window.SuperDocController = ($scope, $resource) ->
+  $scope.moduleList = $resource('/modules').get()
+  $scope.selectedModuleDocumentationUrl = ""
+
+  $scope.selectedModule = null
+
+  $scope.selectModule = (module) ->
+    $scope.selectedModule = module
+    $scope.selectedModuleDocumentationUrl = module.url
+
+
 

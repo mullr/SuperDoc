@@ -19,8 +19,8 @@
 
             <ul class="nav nav-list">
               <li class="nav-header">All Available Modules</li>
-              <li ng-repeat="module in moduleList.modules">
-                <a href="{{module.url}}">{{module.name}}@{{module.version}}</a>
+              <li ng-repeat="module in moduleList.modules" ng-class="{active: module == selectedModule}" >
+                <a href="" ng-click="selectModule(module)"> {{module.name}}@{{module.version}}</a>
               </li>
 
             </ul>
@@ -28,6 +28,8 @@
         </div><!--/span-->
 
 
+        <!-- page content -->
+        <div class="span9" ng-include src="selectedModuleDocumentationUrl"></div>
       </div><!--/row-->
 
       <hr>
