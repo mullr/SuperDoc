@@ -23,7 +23,7 @@ app.configure ->
     express.bodyParser()
     express.methodOverride()
     app.router
-    require('connect-assets')()
+    require('connect-assets') {src: "#{__dirname}/assets"}
     express.static(public_dir)
   ]
 
@@ -36,8 +36,14 @@ app.get '/', (req, res) ->
 
 basePackage = null
 npm.load {loglevel: 'silent'}, (err, npm) ->
+  npm.dir = process.cwd()
   # args, silent, callback
   npm.commands.ls [], true, (err, thisPackage, thisPackageLight) ->
+    if not thisPackage.name?
+      console.log "Couldn't find a node_modules directory"
+      process.exit 1
+
+    console.log arguments
     basePackage = thisPackage
 
 # BFS for a package of the given name and version
