@@ -11,13 +11,29 @@
   </head>
 
   <body ng-controller="SuperDocController">
-    <ul>
-      <li ng-repeat="module in moduleList.modules">
-        <a href="{{module.url}}">{{module.name}}@{{module.version}}</a>
-      </li>
-    </ul>
 
-    <!-- page content -->
-    <div ng-include src="selectedModule.docUrl"></div>
+    <div class="container-fluid">
+      <div class="row-fluid">
+        <div class="span3">
+          <div class="well sidebar-nav">
+
+            <ul class="nav nav-list">
+              <li class="nav-header">All Available Modules</li>
+              <li ng-repeat="module in moduleList.modules">
+                <a href="{{module.url}}">{{module.name}}@{{module.version}}</a>
+              </li>
+
+            </ul>
+          </div><!--/.well -->
+        </div><!--/span-->
+
+
+      </div><!--/row-->
+
+      <hr>
+
+    </div><!--/.fluid-container-->
+
+
   </body>
 </html>
