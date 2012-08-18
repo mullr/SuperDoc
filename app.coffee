@@ -33,38 +33,54 @@ app.configure 'development', ->
 app.get '/', (req, res) ->
   res.render 'index', {version: '0.0.1'}
 
-modules = []
-moduleVisitor = (m) ->
-  return if not m? or not m.path?
-  find.docDirs m, (err, dirs) ->
 
-    return if not dirs?
+baseModule = null
+npm.load {loglevel: 'silent'}, (err, npm) ->
+  # args, silent, callback
+  npm.commands.ls [], true, (err, thisModule, thisModuleLight) ->
+    baseModule = thisModule
 
-    find.file dirs, [], m.name, (err, docFile) ->
-      m.documentationFile = docFile
-      modules.push m
-
-find.moduleBfs moduleVisitor, (err) ->
+# BFS for a module of the given name and version
+findModule = (name, version) ->
+  queue = [baseModule]
+  while queue.length > 0
+    current = queue.shift()
+    return current if (current.name is name) and (current.version is version)
+    queue.push(mod) for own n,mod of current.dependencies
+  return null
 
 
 app.get '/modules/:moduleId', (req, res) ->
   [moduleName, moduleVersion] = req.params.moduleId.split("@")
-  m = _.find modules, (m) -> m.name    is moduleName and
-                             m.version is moduleVersion
 
-  fs.readFile m.documentationFile, "utf8", (err, data) ->
-    res.send markdown(data)
+  m = findModule moduleName, moduleVersion
+  return res.send 404 if not m?
+
+  find.docDirs m, (err, dirs) ->
+    throw err if err?
+
+    find.file dirs, moduleName, (err, docFile, isMarkdown) ->
+      throw err if err?
+      return res.send 404, "no doc found" if not docFile?
+
+      if isMarkdown
+        fs.readFile docFile, "utf8", (err, data) ->
+          throw err if err?
+          res.send markdown(data)
+      else
+        res.sendfile docFile
 
 
 app.get '/modules', (req, res) ->
   result = []
-  for m in modules
+  for own name,mod of baseModule.dependencies
     result.push
-      name: m.name
-      version: m.version
-      path: m.path
-      url: "/modules/#{m.name}@#{m.version}"
-      documentationFile: m.documentationFile
+      name: mod.name
+      version: mod.version
+      path: mod.path
+      url: "/modules/#{mod.name}@#{mod.version}"
+      documentationFile: mod.documentationFile
+
 
   res.json
     modules: result

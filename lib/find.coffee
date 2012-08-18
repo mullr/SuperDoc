@@ -6,6 +6,15 @@ npm = require "npm"
 
 # This is cribbed almost verbatim from https://github.com/russfrank/nd
 
+module.exports.listModules = (global, cb) ->
+  npm.load {loglevel: 'silent'}, (err, npm) ->
+
+    npm.config.set('global',true) if global?
+    args = []
+    silent = true
+
+    npm.commands.ls args, silent, cb
+
 doBfs = (visitor, global, cb) ->
   npm.load {loglevel: 'silent'}, (err, npm) ->
 
@@ -20,6 +29,7 @@ doBfs = (visitor, global, cb) ->
 
       while queue.length > 0
         node = queue.shift()
+        node.global = global
         shouldStop = visitor(node)
         if shouldStop is 'stop'
           return cb(null, true)
@@ -97,58 +107,30 @@ addMdExts = ->
   ), []
 
 
+
 ###
-Try to find a file matching the given query and give its contents
-to `cb`
+Try to find a documentation file. 
 
-dirs:   array of directories to search in
-args:   arguments of query
-module: name of the module
-cb:   continuation to respond to when complete
-
-<< from nd docs >> 
-For example, if we type
-
-$ nd npm cli
-
-We will get npm/doc/cli/index.md. So, if additional arguments (besides the
-module name) are provided, we try to find a file which is more specific: we'll
-look for module/arg1/arg2/index.md, module/arg1/arg2/arg2.md, and
-module/arg1/arg2.md. This allows us to be flexible about the organization of
-documentation within modules.
+  dirs: the directories to look in. 
+  moduleName: the name of the module whose docs we're looking for
+  cb: (err, file, isMarkdown)
 ###
-exports.file = file = (dirs, args, module, cb) ->
-  filesToTry = []
+exports.file = file = (dirs, moduleName, cb) ->
 
-  for d in dirs
-    base = path.join(d, path.join.apply(null, args))
+  fileBaseNames = ["index", moduleName, "Readme", "ReadMe", "readme", "README"]
+  markdownExtensions = [".md", ".mkdn", ".mdown", ".markdown"]
+  otherExtensions = [".html", ".txt", ""]
 
-    # for supporting module/args*.md
-    filesToTry.push addMdExts(path.join(base))
-    
-    # for supporting module/args*/index.md
-    filesToTry.push addMdExts(path.join(base, "index"))
+  markdownFilesToTry = (path.join(dir, baseName + ext) for dir in dirs for baseName in fileBaseNames for ext in markdownExtensions)
+  otherFilesToTry    = (path.join(dir, baseName + ext) for dir in dirs for baseName in fileBaseNames for ext in otherExtensions)
 
-    if args and args.length isnt 0
-      # for supporting module/args*/lastarg.md
-      filesToTry.push addMdExts(path.join(base, args[args.length - 1]))
+  markdownFilesToTry = _.flatten markdownFilesToTry
+  otherFilesToTry    = _.flatten otherFilesToTry
 
-    else
-      # for supporting module/docs/modulename.md
-      filesToTry.push addMdExts(path.join(base, module))
-      
-      # for supporting README.md
-      filesToTry.push addMdExts(path.join(base, "Readme"),
-                                path.join(base, "ReadMe"),
-                                path.join(base, "readme"),
-                                path.join(base, "README"))
+  filesToTry = markdownFilesToTry.concat(otherFilesToTry)
 
-  filesToTry = _.flatten filesToTry
-  
-  # find the first of the `tries` array which actually exists, and return it
+  # find the first of the filesToTry array which actually exists, and return it
   async.detectSeries filesToTry, path.exists, (result) ->
-    if result
-      cb null, result
-    else
-      cb new Error("no markdown files found matching query")
+    isMarkdown = _.contains markdownFilesToTry, result
+    cb(null, result, isMarkdown)
 

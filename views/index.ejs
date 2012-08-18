@@ -29,7 +29,9 @@
 
 
         <!-- page content -->
-        <div class="span9" ng-include src="selectedModuleDocumentationUrl"></div>
+        <div class="span9" ng-bind-html-unsafe="htmlData"></div>
+        <pre class="span9 plainTextContent" ng-bind="textData"> </pre>
+          
       </div><!--/row-->
 
       <hr>
