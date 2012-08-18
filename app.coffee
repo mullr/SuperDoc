@@ -77,9 +77,15 @@ app.get '/modules', (req, res) ->
     result.push
       name: mod.name
       version: mod.version
+      description: mod.description
       path: mod.path
       url: "/modules/#{mod.name}@#{mod.version}"
-      documentationFile: mod.documentationFile
+      author:
+        name: mod.author.name
+        email: mod.author.email
+      homepage: mod.homepage
+      bugsUrl: mod.bugs?.url
+      licenses: mod.licenses
 
 
   res.json

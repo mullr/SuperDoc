@@ -1,52 +1,61 @@
 <!doctype html>
 <html ng-app="SuperDoc">
-  <head>
-    <script src="/javascripts/angular-1.0.1.min.js"></script>
-    <script src="/javascripts/angular-resource-1.0.1.min.js"></script>
+<head>
+<script src="/javascripts/angular-1.0.1.min.js"></script>
+<script src="/javascripts/angular-resource-1.0.1.min.js"></script>
+<script src="/javascripts/angular-bootstrap-1.0.1.js"></script>
 
-    <%- js('client') %>
-    <%- css('style') %>
+<%- js('client') %>
+<%- css('style') %>
 
-    <title>SuperDoc</title>
-  </head>
+<title>SuperDoc</title>
+</head>
 
-  <body ng-controller="SuperDocController">
+<body ng-controller="SuperDocController">
 
-    <div class="container-fluid">
+<div class="container-fluid">
 
-      <div class="span3 sidebar-span">
-        <div class="well sidebar-nav">
 
-          <ul class="nav nav-list">
-            <li class="nav-header">Local Modules</li>
-            <li ng-repeat="module in moduleList.modules" ng-class="{active: module == selectedModule}" >
-              <a href="" ng-click="selectModule(module)"> {{module.name}}@{{module.version}}</a>
-            </li>
-            
-            <li class="divider"></li>
-            <li class="nav-header">
-              This is SuperDoc version <%= version %>
-            </li>
+  <div class="row-fluid">
+    <div class="span3">
+      <div class="well sidebar-nav">
 
-          </ul>
-        </div><!--/.well -->
+        <ul class="nav nav-list">
+          <li class="nav-header">Local Modules</li>
 
-      </div><!--/span-->
+          <li ng-repeat="module in moduleList.modules" ng-class="{active: module == selectedModule}" >
+          <a href="#" ng-click="selectModule(module)"> {{module.name}}@{{module.version}}</a>
+          </li>
 
-      <div class="row-fluid">
-        <!-- sidebar placeholder -->
-        <div class="span3"></div>
+          <li class="divider"></li>
+          <li class="nav-header"> This is SuperDoc version <%= version %> </li>
 
-        <!-- page content -->
-        <div class="span9" >
+        </ul>
+      </div><!--/.well -->
+
+    </div><!--/span-->
+
+
+    <div class="span9" ng-show="selectedModule">
+
+      <div class="tabbable" ng-model="activeTabName">
+
+        <div class="tab-pane" title="Readme">
+          <!-- page content; only one of these will have content at a time -->
           <div ng-bind-html-unsafe="htmlData"></div>
-          <pre class="plainTextContent" ng-bind="textData"> </pre>
+          <pre class="plainTextContent" ng-bind="textData"></pre>
         </div>
-          
-      </div><!--/row-->
 
-    </div><!--/.fluid-container-->
+        <div class="tab-pane" title="Module info" ng-include="'moduleInfo.html'"> </div>
+
+      </div>
+
+    </div>
+
+  </div><!--/row-->
+
+</div><!--/.fluid-container-->
 
 
-  </body>
+</body>
 </html>
