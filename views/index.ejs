@@ -13,32 +13,32 @@
   <body ng-controller="SuperDocController">
 
     <div class="container-fluid">
+
+      <div class="span3 sidebar-span">
+        <div class="well sidebar-nav">
+
+          <ul class="nav nav-list">
+            <li class="nav-header">Local Modules</li>
+            <li ng-repeat="module in moduleList.modules" ng-class="{active: module == selectedModule}" >
+              <a href="" ng-click="selectModule(module)"> {{module.name}}@{{module.version}}</a>
+            </li>
+
+          </ul>
+        </div><!--/.well -->
+
+      </div><!--/span-->
+
       <div class="row-fluid">
-        <div class="span3">
-          <div class="well sidebar-nav">
-
-            <ul class="nav nav-list">
-              <li class="nav-header">All Available Modules</li>
-              <li ng-repeat="module in moduleList.modules" ng-class="{active: module == selectedModule}" >
-                <a href="" ng-click="selectModule(module)"> {{module.name}}@{{module.version}}</a>
-              </li>
-
-            </ul>
-          </div><!--/.well -->
-        </div><!--/span-->
-
+        <!-- sidebar placeholder -->
+        <div class="span3"></div>
 
         <!-- page content -->
-        <div class="span9" ng-bind-html-unsafe="htmlData"></div>
-        <pre class="span9 plainTextContent" ng-bind="textData"> </pre>
+        <div class="span9" >
+          <div ng-bind-html-unsafe="htmlData"></div>
+          <pre class="plainTextContent" ng-bind="textData"> </pre>
+        </div>
           
       </div><!--/row-->
-
-      <hr>
-
-      <footer>
-        <p>This is SuperDoc version <%= version %></p>
-      </footer>
 
     </div><!--/.fluid-container-->
 
