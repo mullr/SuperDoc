@@ -1,12 +1,20 @@
 <!doctype html>
-<html>
+<html ng-app="SuperDoc">
   <head>
     <script src="/javascripts/angular-1.0.1.min.js"></script>
+    <script src="/javascripts/angular-resource-1.0.1.min.js"></script>
     <%- js('client') %>
     <title>SuperDoc</title>
   </head>
 
-  <body>
-    aldskfad
+  <body ng-controller="SuperDocController">
+    <ul>
+      <li ng-repeat="module in moduleList.modules">
+        <a href="{{module.url}}">{{module.name}}@{{module.version}}</a>
+      </li>
+    </ul>
+
+    <!-- page content -->
+    <div ng-include src="selectedModule.docUrl"></div>
   </body>
 </html>

@@ -61,12 +61,13 @@ app.get '/modules', (req, res) ->
   for m in modules
     result.push
       name: m.name
-      verison: m.version
+      version: m.version
       path: m.path
-      url: "#{m.name}@#{m.version}"
+      url: "/modules/#{m.name}@#{m.version}"
       documentationFile: m.documentationFile
 
-  res.json result
+  res.json
+    modules: result
 
 
 
