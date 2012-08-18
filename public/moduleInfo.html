@@ -29,7 +29,7 @@
     </dd>
     
     <dt ng-show="selectedModule.licenses">License</dt>
-    <dd ng-show="license in selectedModule.licenses">
+    <dd ng-show="selectedModule.licenses">
     <a ng-repeat="license in selectedModule.licenses" ng-href="{{license.url}}">{{license.type}}</a>
     </dd>
 

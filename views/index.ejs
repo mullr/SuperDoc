@@ -21,9 +21,14 @@
       <div class="well sidebar-nav">
 
         <ul class="nav nav-list">
-          <li class="nav-header">Local Modules</li>
+          <li class="nav-header">This Package</li>
+          <li ng-class="{active: selectedModule == project.basePackage}" >
+          <a href="#" ng-click="selectModule(project.basePackage)"> {{project.basePackage.name}}@{{project.basePackage.version}}</a>
+          </li>
 
-          <li ng-repeat="module in moduleList.modules" ng-class="{active: module == selectedModule}" >
+
+          <li class="nav-header">Dependencies</li>
+          <li ng-repeat="module in project.dependencies" ng-class="{active: selectedModule == module}" >
           <a href="#" ng-click="selectModule(module)"> {{module.name}}@{{module.version}}</a>
           </li>
 
@@ -32,12 +37,10 @@
 
         </ul>
       </div><!--/.well -->
-
     </div><!--/span-->
 
 
     <div class="span9" ng-show="selectedModule">
-
       <div class="tabbable" ng-model="activeTabName">
 
         <div class="tab-pane" title="Readme">
@@ -49,11 +52,8 @@
         <div class="tab-pane" title="Module info" ng-include="'moduleInfo.html'"> </div>
 
       </div>
-
     </div>
-
   </div><!--/row-->
-
 </div><!--/.fluid-container-->
 
 

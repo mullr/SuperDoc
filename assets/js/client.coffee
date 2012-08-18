@@ -1,7 +1,7 @@
 superDoc = angular.module 'SuperDoc', ['ngResource', 'bootstrap']
 
 window.SuperDocController = ($scope, $resource, $http) ->
-  $scope.moduleList = $resource('/modules').get()
+  $scope.project = $resource('/modules').get()
   $scope.selectedModuleDocumentationUrl = ""
 
   $scope.activeTabName = "Readme"

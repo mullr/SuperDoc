@@ -61,7 +61,7 @@ app.get '/modules/:moduleId', (req, res) ->
 
     find.file dirs, moduleName, (err, docFile, isMarkdown) ->
       throw err if err?
-      return res.send 404, "no doc found" if not docFile?
+      return res.send "<< Couldn't find a readme file >>" if not docFile?
 
       if isMarkdown
         fs.readFile docFile, "utf8", (err, data) ->
@@ -70,26 +70,23 @@ app.get '/modules/:moduleId', (req, res) ->
       else
         res.sendfile docFile
 
+extractModuleMetadata = (mod) ->
+  name: mod.name
+  version: mod.version
+  description: mod.description
+  path: mod.path
+  url: "/modules/#{mod.name}@#{mod.version}"
+  author:
+    name: mod.author?.name
+    email: mod.author?.email
+  homepage: mod.homepage
+  bugsUrl: mod.bugs?.url
+  licenses: mod.licenses
 
 app.get '/modules', (req, res) ->
-  result = []
-  for own name,mod of baseModule.dependencies
-    result.push
-      name: mod.name
-      version: mod.version
-      description: mod.description
-      path: mod.path
-      url: "/modules/#{mod.name}@#{mod.version}"
-      author:
-        name: mod.author.name
-        email: mod.author.email
-      homepage: mod.homepage
-      bugsUrl: mod.bugs?.url
-      licenses: mod.licenses
-
-
   res.json
-    modules: result
+    basePackage: extractModuleMetadata(baseModule)
+    dependencies: (extractModuleMetadata(mod) for name,mod of baseModule.dependencies)
 
 
 
