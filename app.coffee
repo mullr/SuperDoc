@@ -4,7 +4,7 @@ path = require 'path'
 fs = require 'fs'
 npm = require 'npm'
 _ = require 'underscore'
-markdown = require("node-markdown").Markdown
+markdown = require 'marked'
 
 
 find = require './lib/find'
