@@ -22,6 +22,11 @@
             <li ng-repeat="module in moduleList.modules" ng-class="{active: module == selectedModule}" >
               <a href="" ng-click="selectModule(module)"> {{module.name}}@{{module.version}}</a>
             </li>
+            
+            <li class="divider"></li>
+            <li class="nav-header">
+              This is SuperDoc version <%= version %>
+            </li>
 
           </ul>
         </div><!--/.well -->
