@@ -31,7 +31,7 @@ app.configure 'development', ->
   app.use express.errorHandler()
 
 app.get '/', (req, res) ->
-  res.render 'index', {}
+  res.render 'index', {version: '0.0.1'}
 
 modules = []
 moduleVisitor = (m) ->
