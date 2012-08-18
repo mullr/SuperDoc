@@ -1,0 +1,37 @@
+<div>
+  <dl class="dl-horizontal">
+    <dt ng-show="selectedPackage.name">Name</dt>
+    <dd ng-show="selectedPackage.name">{{selectedPackage.name}}</dd>
+
+    <dt ng-show="selectedPackage.version">Version</dt>
+    <dd ng-show="selectedPackage.version">{{selectedPackage.version}}</dd>
+
+    <dt ng-show="selectedPackage.description">Description</dt>
+    <dd ng-show="selectedPackage.description">{{selectedPackage.description}}</dd>
+
+    <dt ng-show="selectedPackage.homepage">Home page</dt>
+    <dd ng-show="selectedPackage.homepage">
+    <a ng-href="{{selectedPackage.homepage}}" target="_blank">{{selectedPackage.homepage}}</a>
+    </dd>
+
+    <dt ng-show="selectedPackage.bugsUrl">Issue tracker</dt>
+    <dd ng-show="selectedPackage.bugsUrl">
+    <a ng-href="{{selectedPackage.bugsUrl}}" target="_blank">{{selectedPackage.bugsUrl}}</a>
+    </dd>
+
+
+    <dt ng-show="selectedPackage.author.name">Author</dt>
+    <dd ng-show="selectedPackage.author.email">
+    <a href="mailto:{{selectedPackage.author.email}}">{{selectedPackage.author.name}}</a>
+    </dd>
+    <dd ng-show="!selectedPackage.author.email">
+    {{selectedPackage.author.name}}
+    </dd>
+    
+    <dt ng-show="selectedPackage.licenses">License</dt>
+    <dd ng-show="selectedPackage.licenses">
+    <a ng-repeat="license in selectedPackage.licenses" ng-href="{{license.url}}">{{license.type}}</a>
+    </dd>
+
+  </dl>
+</div>

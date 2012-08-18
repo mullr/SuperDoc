@@ -1,19 +1,20 @@
 superDoc = angular.module 'SuperDoc', ['ngResource', 'bootstrap']
 
 window.SuperDocController = ($scope, $resource, $http) ->
-  $scope.project = $resource('/modules').get()
-  $scope.selectedModuleDocumentationUrl = ""
+  $scope.project = $resource('/project').get()
+  $scope.selectedPackageDocumentationUrl = ""
 
   $scope.activeTabName = "Readme"
-  $scope.selectedModule = null
+  $scope.selectedPackage = null
 
   $scope.htmlData = null
   $scope.textData = null
 
-  $scope.selectModule = (module) ->
-    $scope.selectedModule = module
+  $scope.selectPackage = (pak) ->
+    $scope.selectedPackage = pak
 
-    $http.get(module.url).success (data, status, headers, config) ->
+    console.log pak
+    $http.get(pak.url).success (data, status, headers, config) ->
       contentType = headers('Content-Type')
       if contentType.indexOf('text/html') isnt -1
         $scope.htmlData = data

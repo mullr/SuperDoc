@@ -34,32 +34,32 @@ app.get '/', (req, res) ->
   res.render 'index', {version: '0.0.1'}
 
 
-baseModule = null
+basePackage = null
 npm.load {loglevel: 'silent'}, (err, npm) ->
   # args, silent, callback
-  npm.commands.ls [], true, (err, thisModule, thisModuleLight) ->
-    baseModule = thisModule
+  npm.commands.ls [], true, (err, thisPackage, thisPackageLight) ->
+    basePackage = thisPackage
 
-# BFS for a module of the given name and version
-findModule = (name, version) ->
-  queue = [baseModule]
+# BFS for a package of the given name and version
+findPackage = (name, version) ->
+  queue = [basePackage]
   while queue.length > 0
     current = queue.shift()
     return current if (current.name is name) and (current.version is version)
-    queue.push(mod) for own n,mod of current.dependencies
+    queue.push(pak) for own n,pak of current.dependencies
   return null
 
 
-app.get '/modules/:moduleId', (req, res) ->
-  [moduleName, moduleVersion] = req.params.moduleId.split("@")
+app.get '/packages/:packageId', (req, res) ->
+  [packageName, packageVersion] = req.params.packageId.split("@")
 
-  m = findModule moduleName, moduleVersion
-  return res.send 404 if not m?
+  p = findPackage packageName, packageVersion
+  return res.send 404 if not p?
 
-  find.docDirs m, (err, dirs) ->
+  find.docDirs p, (err, dirs) ->
     throw err if err?
 
-    find.file dirs, moduleName, (err, docFile, isMarkdown) ->
+    find.file dirs, packageName, (err, docFile, isMarkdown) ->
       throw err if err?
       return res.send "<< Couldn't find a readme file >>" if not docFile?
 
@@ -70,23 +70,23 @@ app.get '/modules/:moduleId', (req, res) ->
       else
         res.sendfile docFile
 
-extractModuleMetadata = (mod) ->
-  name: mod.name
-  version: mod.version
-  description: mod.description
-  path: mod.path
-  url: "/modules/#{mod.name}@#{mod.version}"
+extractPackageMetadata = (pak) ->
+  name: pak.name
+  version: pak.version
+  description: pak.description
+  path: pak.path
+  url: "/packages/#{pak.name}@#{pak.version}"
   author:
-    name: mod.author?.name
-    email: mod.author?.email
-  homepage: mod.homepage
-  bugsUrl: mod.bugs?.url
-  licenses: mod.licenses
+    name: pak.author?.name
+    email: pak.author?.email
+  homepage: pak.homepage
+  bugsUrl: pak.bugs?.url
+  licenses: pak.licenses
 
-app.get '/modules', (req, res) ->
+app.get '/project', (req, res) ->
   res.json
-    basePackage: extractModuleMetadata(baseModule)
-    dependencies: (extractModuleMetadata(mod) for name,mod of baseModule.dependencies)
+    basePackage: extractPackageMetadata(basePackage)
+    dependencies: (extractPackageMetadata(pak) for name,pak of basePackage.dependencies)
 
 
 

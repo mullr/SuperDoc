@@ -22,14 +22,14 @@
 
         <ul class="nav nav-list">
           <li class="nav-header">This Package</li>
-          <li ng-class="{active: selectedModule == project.basePackage}" >
-          <a href="#" ng-click="selectModule(project.basePackage)"> {{project.basePackage.name}}@{{project.basePackage.version}}</a>
+          <li ng-class="{active: selectedPackage == project.basePackage}" >
+          <a href="#" ng-click="selectPackage(project.basePackage)"> {{project.basePackage.name}}@{{project.basePackage.version}}</a>
           </li>
 
 
           <li class="nav-header">Dependencies</li>
-          <li ng-repeat="module in project.dependencies" ng-class="{active: selectedModule == module}" >
-          <a href="#" ng-click="selectModule(module)"> {{module.name}}@{{module.version}}</a>
+          <li ng-repeat="pak in project.dependencies" ng-class="{active: selectedPackage == pak}" >
+          <a href="#" ng-click="selectPackage(pak)"> {{pak.name}}@{{pak.version}}</a>
           </li>
 
           <li class="divider"></li>
@@ -40,7 +40,7 @@
     </div><!--/span-->
 
 
-    <div class="span9" ng-show="selectedModule">
+    <div class="span9" ng-show="selectedPackage">
       <div class="tabbable" ng-model="activeTabName">
 
         <div class="tab-pane" title="Readme">
@@ -49,7 +49,7 @@
           <pre class="plainTextContent" ng-bind="textData"></pre>
         </div>
 
-        <div class="tab-pane" title="Module info" ng-include="'moduleInfo.html'"> </div>
+        <div class="tab-pane" title="Package info" ng-include="'packageInfo.html'"> </div>
 
       </div>
     </div>
