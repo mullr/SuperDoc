@@ -6,7 +6,17 @@ window.SuperDocController = ($scope, $resource, $http) ->
 
   $scope.selectedPackage = null
 
-  $scope.activeTabName = "Documentation"
+  $scope.tabs = [
+    name: "Documentation"
+    template: "documentation.html"
+  ,
+    name: "Package info"
+    template: "packageInfo.html"
+  ]
+
+  $scope.selectedTab = $scope.tabs[0]
+  $scope.selectTab = (tab) -> $scope.selectedTab = tab
+
 
   $scope.selectedDoc = null
   $scope.selectedDocHtmlData = null

@@ -3,9 +3,14 @@
 @iconSpritePath:          "/images/glyphicons-halflings.png";
 @iconWhiteSpritePath:     "/images/glyphicons-halflings-white.png";
 
+html, body {
+  height: 100%;
+  overflow: hidden; // stop scroll bounce
+}
+
 body {
+  margin: 0;
   padding-top: 9px;
-  padding-bottom: 40px;
 }
 
 
@@ -13,7 +18,39 @@ body {
   padding: 9px 0;
 }
 
+.doc-list-nav {
+  height: 40px;
+  overflow: hidden;
+}
+
 .plainTextContent {
   background-color: white;
   border: none
 }
+
+.package-tabs {
+  margin-bottom: 1px;
+}
+
+.doc-tabs {
+ margin-top: 3px;
+ margin-pottom: 1px;
+}
+
+.doc-viewer {
+  width: 100%;
+  height: 100%;
+  border: 0px;
+
+  // use these to pull in the bottom of the iframe
+  border-bottom: 46px solid white;
+  box-sizing: border-box;
+}
+
+
+// Need to pull in the bottom more when we're showing the
+// sub nav for additional documents
+.doc-viewer-short {
+  border-bottom: 86px solid white;
+}
+

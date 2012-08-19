@@ -41,26 +41,14 @@
 
 
     <div class="span9" ng-show="selectedPackage">
-      <div class="tabbable" ng-model="activeTabName">
 
-        <div class="tab-pane" title="Documentation">
+      <ul class="nav nav-tabs package-tabs">
+        <li ng-repeat="tab in tabs" ng-click="selectTab(tab)" ng-class="{active: tab == selectedTab}">
+        <a href="#">{{tab.name}}</a>
+        </li>
+      </ul> 
 
-          <div class="docList" ng-show="selectedPackage.docs.length > 1">
-            <ul class="nav nav-pills">
-              <li ng-repeat="doc in selectedPackage.docs" ng-click="selectDoc(doc)" ng-class="{active: selectedDoc == doc}">
-              <a href="#">{{doc.name}}</a> 
-              </li>
-            </ul>
-          </div>
-
-          <!-- page content; only one of these will have content at a time -->
-          <div ng-bind-html-unsafe="selectedDocHtmlData"></div>
-          <pre class="plainTextContent" ng-bind="selectedDocTextData"></pre>
-        </div>
-
-        <div class="tab-pane" title="Package info" ng-include="'packageInfo.html'"></div>
-
-      </div>
+      <div ng-include="selectedTab.template"></div>
     </div>
   </div><!--/row-->
 </div><!--/.fluid-container-->
