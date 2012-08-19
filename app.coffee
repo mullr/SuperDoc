@@ -6,7 +6,7 @@ npm = require 'npm'
 _ = require 'underscore'
 markdown = require 'marked'
 async = require 'async'
-
+open = require 'open'
 
 find = require './lib/find'
 
@@ -53,6 +53,7 @@ npm.load {loglevel: 'silent'}, (err, npm) ->
       pkg.documentationFiles = find.docFiles(pkg.path, pkg.name)
 
     doneLoading = true
+    startServer()
 
 # BFS for a package of the given name and version
 findPackage = (name, version) ->
@@ -126,5 +127,7 @@ app.get '/project', (req, res) ->
     dependencies: (extractPackageMetadata(pkg) for pkg in deps)
 
 
-http.createServer(app).listen app.get('port'), ->
-  console.log "Express server listening on port " + app.get('port')
+startServer = ->
+  http.createServer(app).listen app.get('port'), ->
+    console.log "Express server listening on port " + app.get('port')
+    open('http://localhost:3000')
