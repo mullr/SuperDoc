@@ -53,7 +53,6 @@ npm.load {loglevel: 'silent'}, (err, npm) ->
     deps = (pkg for own name,pkg of basePackage.dependencies)
     allPackages = [basePackage].concat(deps)
     for pkg in allPackages
-      console.log pkg.name
       pkg.documentationFiles = find.docFiles(pkg.path, pkg.name)
 
     doneLoading = true
@@ -99,7 +98,6 @@ app.get /^\/packages\/(.*)/, (req, res) ->
       return res.send 404, "Couldn't read file" if err?
       res.render 'markdown', html: markdown(data)
   else
-    console.log magic
     magic.detectFile absolutePath, (err, mimeType) ->
       throw err if err?
       res.set 'Content-Type', mimeType
