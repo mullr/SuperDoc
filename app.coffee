@@ -97,7 +97,7 @@ app.get /^\/packages\/(.*)/, (req, res) ->
   if find.hasMarkdownExtension(relativePath)
     fs.readFile absolutePath, "utf8", (err, data) ->
       return res.send 404, "Couldn't read file" if err?
-      res.send markdown(data)
+      res.render 'markdown', html: markdown(data)
   else
     console.log magic
     magic.detectFile absolutePath, (err, mimeType) ->
