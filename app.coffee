@@ -8,6 +8,10 @@ markdown = require 'marked'
 async = require 'async'
 open = require 'open'
 
+mmm = new require('mmmagic')
+magic = new mmm.Magic(mmm.MAGIC_MIME)
+
+
 find = require './lib/find'
 
 app = express()
@@ -95,7 +99,11 @@ app.get /^\/packages\/(.*)/, (req, res) ->
       return res.send 404, "Couldn't read file" if err?
       res.send markdown(data)
   else
-    res.sendfile absolutePath
+    console.log magic
+    magic.detectFile absolutePath, (err, mimeType) ->
+      throw err if err?
+      res.set 'Content-Type', mimeType
+      res.sendfile absolutePath
 
 extractPackageMetadata = (pkg) ->
 
