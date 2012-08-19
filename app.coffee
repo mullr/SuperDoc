@@ -1,21 +1,36 @@
-express = require 'express'
-http = require 'http'
-path = require 'path'
-fs = require 'fs'
-npm = require 'npm'
-_ = require 'underscore'
+express  = require 'express'
+http     = require 'http'
+path     = require 'path'
+fs       = require 'fs'
 markdown = require 'marked'
-async = require 'async'
-open = require 'open'
+open     = require 'open'
 
-mmm = new require('mmmagic')
+mmm   = new require('mmmagic')
 magic = new mmm.Magic(mmm.MAGIC_MIME)
 
+packageLoading = require './packageLoading'
 
-find = require './lib/find'
+
+basePackage = null
+packageLoading.getPackageInfoFor process.cwd(), (err, pkg) ->
+  if err?
+    console.log err
+    process.exit 1
+
+  basePackage = pkg
+  startServer()
+
+# BFS for a package of the given name and version
+findPackage = (name, version) ->
+  queue = [basePackage]
+  while queue.length > 0
+    current = queue.shift()
+    return current if (current.name is name) and (current.version is version)
+    queue.push(pak) for own n,pak of current.dependencies
+  return null
+
 
 app = express()
-public_dir = path.join(__dirname, 'public')
 
 app.configure ->
   app.set 'port', process.env.PORT || 3000
@@ -29,59 +44,32 @@ app.configure ->
     express.methodOverride()
     app.router
     require('connect-assets') {src: "#{__dirname}/assets"}
-    express.static(public_dir)
+    express.static(path.join(__dirname, 'public'))
+    express.errorHandler()
   ]
 
-app.configure 'development', ->
-  app.use express.errorHandler()
 
+startServer = ->
+  http.createServer(app).listen app.get('port'), ->
+    console.log "Express server listening on port " + app.get('port')
+    open('http://localhost:3000')
+
+
+###
+Main page
+###
 app.get '/', (req, res) ->
   res.render 'index', {version: '0.0.1'}
 
-doneLoading = false
-basePackage = null
-npm.load {loglevel: 'silent'}, (err, npm) ->
-  npm.dir = process.cwd()
-  # args, silent, callback
-  npm.commands.ls [], true, (err, thisPackage, thisPackageLight) ->
-    if not thisPackage.name?
-      console.log "Couldn't find a node_modules directory"
-      process.exit 1
+###
+Serve up package contents. A package is identified
+by a 'name@verison' string. Anything after that indicates
+a file in the package directory. Will render markdown files
+to html; for everything else, it uses file magic to try to
+at least get the content type correct. 
 
-    basePackage = thisPackage
-
-    deps = (pkg for own name,pkg of basePackage.dependencies)
-    allPackages = [basePackage].concat(deps)
-    for pkg in allPackages
-      pkg.documentationFiles = find.docFiles(pkg.path, pkg.name)
-
-    doneLoading = true
-    startServer()
-
-# BFS for a package of the given name and version
-findPackage = (name, version) ->
-  queue = [basePackage]
-  while queue.length > 0
-    current = queue.shift()
-    return current if (current.name is name) and (current.version is version)
-    queue.push(pak) for own n,pak of current.dependencies
-  return null
-
-findDocFilesForPackage = (pak, cb) ->
-  find.docDirs pak, (err, dirs) ->
-    return cb(err) if err?
-
-    find.file dirs, pak.name, (err, docFiles) ->
-      return cb(err) if err?
-
-      pak.documentationFiles = []
-      for f in docFiles
-        # Put relative paths in here; the +1 knocks off a slash
-        pak.documentationFiles.push f.substring(pak.path.length + 1, f.length)
-
-      cb(null)
-
-
+  Example url: /packages/express@3.0.0rc3/Readme.md
+###
 app.get /^\/packages\/(.*)/, (req, res) ->
   segments = req.params[0].split('/')
 
@@ -93,7 +81,7 @@ app.get /^\/packages\/(.*)/, (req, res) ->
 
   absolutePath = path.join pkg.path, relativePath
 
-  if find.hasMarkdownExtension(relativePath)
+  if packageLoading.hasMarkdownExtension(relativePath)
     fs.readFile absolutePath, "utf8", (err, data) ->
       return res.send 404, "Couldn't read file" if err?
       res.render 'markdown', html: markdown(data)
@@ -103,8 +91,11 @@ app.get /^\/packages\/(.*)/, (req, res) ->
       res.set 'Content-Type', mimeType
       res.sendfile absolutePath
 
-extractPackageMetadata = (pkg) ->
 
+###
+Helper for generating the json to describe a package
+###
+packageMetadata = (pkg) ->
   docUrl = (relativePath) -> "/packages/#{pkg.name}@#{pkg.version}/#{relativePath}"
   otherDocs = pkg.documentationFiles.slice(1, pkg.documentationFiles.length)
 
@@ -123,17 +114,17 @@ extractPackageMetadata = (pkg) ->
 
   return metadata
 
+###
+Get a json description of the current package and all of its direct
+dependencies. Mostly the same as package.json, with the exception of
+the added 'docs' field. 
+###
 app.get '/project', (req, res) ->
   deps = (pkg for own name, pkg of basePackage.dependencies)
   # the last one is bogus for some reason. 
   deps = deps.slice(0, deps.length-1)
 
   res.json
-    basePackage: extractPackageMetadata(basePackage)
-    dependencies: (extractPackageMetadata(pkg) for pkg in deps)
+    basePackage: packageMetadata(basePackage)
+    dependencies: (packageMetadata(pkg) for pkg in deps)
 
-
-startServer = ->
-  http.createServer(app).listen app.get('port'), ->
-    console.log "Express server listening on port " + app.get('port')
-    open('http://localhost:3000')

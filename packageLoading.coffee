@@ -1,8 +1,31 @@
-fs = require "fs"
-async = require "async"
-path = require "path"
-_ = require "underscore"
-npm = require "npm"
+npm  = require 'npm'
+fs   = require 'fs'
+path = require 'path'
+_    = require 'underscore'
+
+###
+Load package info for the given directory. Packages are normal
+npm objects, but they have an additional 'documentationFiles' property
+like this:
+
+[ {name: 'Readme.md', path: 'docs/Readme.md'} ]
+
+Callback is (err, basePackage)
+###
+module.exports.getPackageInfoFor = (baseDir, cb) ->
+  npm.load {loglevel: 'silent'}, (err, npm) ->
+    npm.dir = baseDir
+    # args, silent, callback
+    npm.commands.ls [], true, (err, basePackage, basePackageLight) ->
+      if not basePackage.name?
+        return cb "Couldn't find a node_modules directory"
+
+      deps = (pkg for own name,pkg of basePackage.dependencies)
+      allPackages = [basePackage].concat(deps)
+      for pkg in allPackages
+        pkg.documentationFiles = findDocFiles(pkg.path, pkg.name)
+
+      cb(null, basePackage)
 
 endsWith = (str, suffix) ->
   str.indexOf(suffix, str.length - suffix.length) isnt -1
@@ -45,7 +68,7 @@ packageDir: the package's base directory.
 packageName: the name of the package (used by the heuristic)
 return: a list of paths relative to packageDir
 ###
-exports.docFiles = (packageDir, packageName) ->
+findDocFiles = (packageDir, packageName) ->
   allFiles = listFilesInPackage(packageDir)
 
   # a list of files to look for, with the highest-priority items first. 
