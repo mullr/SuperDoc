@@ -4,24 +4,37 @@ window.SuperDocController = ($scope, $resource, $http) ->
   $scope.project = $resource('/project').get()
   $scope.selectedPackageDocumentationUrl = ""
 
-  $scope.activeTabName = "Readme"
   $scope.selectedPackage = null
 
-  $scope.htmlData = null
-  $scope.textData = null
+  $scope.activeTabName = "Documentation"
 
-  $scope.selectPackage = (pak) ->
-    $scope.selectedPackage = pak
+  $scope.selectedDoc = null
+  $scope.selectedDocHtmlData = null
+  $scope.selectedDocTextData = null
 
-    console.log pak
-    $http.get(pak.url).success (data, status, headers, config) ->
+  showText = (data) ->
+    $scope.selectedDocHtmlData = null
+    $scope.selectedDocTextData = data
+
+  showHtml = (data) ->
+    $scope.selectedDocHtmlData = data
+    $scope.selectedDocTextData = null
+
+  $scope.selectPackage = (pkg) ->
+    $scope.selectedPackage = pkg
+    if(pkg.docs.length > 0)
+      $scope.selectDoc(pkg.docs[0])
+    else
+      showText "No documentation found"
+    
+  $scope.selectDoc = (doc) ->
+    $scope.selectedDoc = doc
+    $http.get(doc.url).success (data, status, headers, config) ->
       contentType = headers('Content-Type')
       if contentType.indexOf('text/html') isnt -1
-        $scope.htmlData = data
-        $scope.textData = null
+        showHtml(data)
       else
-        $scope.htmlData = null
-        $scope.textData = data
+        showText(data)
 
 
 superDoc.filter 'prettifyHomepageUrl', () ->

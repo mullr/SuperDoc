@@ -108,29 +108,77 @@ addMdExts = ->
 
 
 
+endsWith = (str, suffix) ->
+  str.indexOf(suffix, str.length - suffix.length) isnt -1
+
+markdownExtensions = [".md", ".mkdn", ".mdown", ".markdown"]
+
+exports.hasMarkdownExtension = (filename) ->
+  for ext in markdownExtensions
+    return true if endsWith(filename, ext)
+  return false
+
+# List everything recursively, but don't recurse into node_modules
+listFilesInPackage = (packageDir) ->
+  files = []
+  queue = [packageDir]
+
+  ignore = /(node_modules$|\/\..*|vendor$|test$)/
+
+  while queue.length > 0
+    f = queue.shift()
+    continue if f.match(ignore)
+
+    files.push f
+    if fs.statSync(f).isDirectory()
+      queue.push(path.join(f, entry)) for entry in fs.readdirSync(f)
+
+  return files
+
+
+exports.docFiles = (packageDir, packageName) ->
+  allFiles = listFilesInPackage(packageDir)
+
+  # a list of files to look for, with the highest-priority ones first. 
+  patterns =  [
+    /readme\.(md|mkdn|mdown|markdown)$/
+    new RegExp("#{packageName}\\.$(md|mkdn|mdown|markdown)")
+    /index\.html$/
+    /readme\.txt$/
+    /readme/
+    /docs\/.*\.(md|mkdn|mdown|markdown|html)$/
+  ]
+  patterns = _.flatten patterns
+
+  docFiles = []
+  for p in patterns
+    for f in allFiles
+      docFiles.push(f) if f.toLowerCase().match(p)
+
+  docFiles = _.uniq docFiles
+  # paths should be relative to the module dir
+  docFiles = (f.substring(packageDir.length + 1, f.length) for f in docFiles)
+  console.log docFiles
+  return docFiles
+
+
 ###
 Try to find a documentation file. 
 
   dirs: the directories to look in. 
-  moduleName: the name of the module whose docs we're looking for
-  cb: (err, file, isMarkdown)
+  packageName: the name of the package whose docs we're looking for
+  cb: (err, {filePath: isMarkdown})
 ###
-exports.file = file = (dirs, moduleName, cb) ->
+exports.file = file = (dirs, packageName, cb) ->
 
-  fileBaseNames = ["index", moduleName, "Readme", "ReadMe", "readme", "README"]
-  markdownExtensions = [".md", ".mkdn", ".mdown", ".markdown"]
+  fileBaseNames = ["index", packageName.toLowerCase(), "readme"]
   otherExtensions = [".html", ".txt", ""]
 
   markdownFilesToTry = (path.join(dir, baseName + ext) for dir in dirs for baseName in fileBaseNames for ext in markdownExtensions)
   otherFilesToTry    = (path.join(dir, baseName + ext) for dir in dirs for baseName in fileBaseNames for ext in otherExtensions)
 
-  markdownFilesToTry = _.flatten markdownFilesToTry
-  otherFilesToTry    = _.flatten otherFilesToTry
+  filesToTry = _.flatten [markdownFilesToTry, otherFilesToTry]
 
-  filesToTry = markdownFilesToTry.concat(otherFilesToTry)
-
-  # find the first of the filesToTry array which actually exists, and return it
-  async.detectSeries filesToTry, path.exists, (result) ->
-    isMarkdown = _.contains markdownFilesToTry, result
-    cb(null, result, isMarkdown)
+  async.filter filesToTry, path.exists, (filesThatExist) ->
+    cb(null, filesThatExist)
 

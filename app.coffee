@@ -5,6 +5,7 @@ fs = require 'fs'
 npm = require 'npm'
 _ = require 'underscore'
 markdown = require 'marked'
+async = require 'async'
 
 
 find = require './lib/find'
@@ -33,7 +34,7 @@ app.configure 'development', ->
 app.get '/', (req, res) ->
   res.render 'index', {version: '0.0.1'}
 
-
+doneLoading = false
 basePackage = null
 npm.load {loglevel: 'silent'}, (err, npm) ->
   npm.dir = process.cwd()
@@ -43,8 +44,15 @@ npm.load {loglevel: 'silent'}, (err, npm) ->
       console.log "Couldn't find a node_modules directory"
       process.exit 1
 
-    console.log arguments
     basePackage = thisPackage
+
+    deps = (pkg for own name,pkg of basePackage.dependencies)
+    allPackages = [basePackage].concat(deps)
+    for pkg in allPackages
+      console.log pkg.name
+      pkg.documentationFiles = find.docFiles(pkg.path, pkg.name)
+
+    doneLoading = true
 
 # BFS for a package of the given name and version
 findPackage = (name, version) ->
@@ -55,45 +63,67 @@ findPackage = (name, version) ->
     queue.push(pak) for own n,pak of current.dependencies
   return null
 
+findDocFilesForPackage = (pak, cb) ->
+  find.docDirs pak, (err, dirs) ->
+    return cb(err) if err?
 
-app.get '/packages/:packageId', (req, res) ->
-  [packageName, packageVersion] = req.params.packageId.split("@")
+    find.file dirs, pak.name, (err, docFiles) ->
+      return cb(err) if err?
 
-  p = findPackage packageName, packageVersion
-  return res.send 404 if not p?
+      pak.documentationFiles = []
+      for f in docFiles
+        # Put relative paths in here; the +1 knocks off a slash
+        pak.documentationFiles.push f.substring(pak.path.length + 1, f.length)
 
-  find.docDirs p, (err, dirs) ->
-    throw err if err?
+      cb(null)
 
-    find.file dirs, packageName, (err, docFile, isMarkdown) ->
-      throw err if err?
-      return res.send "<< Couldn't find a readme file >>" if not docFile?
 
-      if isMarkdown
-        fs.readFile docFile, "utf8", (err, data) ->
-          throw err if err?
-          res.send markdown(data)
-      else
-        res.sendfile docFile
+app.get /^\/packages\/(.*)/, (req, res) ->
+  segments = req.params[0].split('/')
 
-extractPackageMetadata = (pak) ->
-  name: pak.name
-  version: pak.version
-  description: pak.description
-  path: pak.path
-  url: "/packages/#{pak.name}@#{pak.version}"
-  author:
-    name: pak.author?.name
-    email: pak.author?.email
-  homepage: pak.homepage
-  bugsUrl: pak.bugs?.url
-  licenses: pak.licenses
+  [packageName, packageVersion] = segments.shift().split('@')
+  relativePath = segments.join '/'
+
+  pkg = findPackage packageName, packageVersion
+  return res.send 404, "package not found" if not pkg?
+
+  absolutePath = path.join pkg.path, relativePath
+
+  if find.hasMarkdownExtension(relativePath)
+    fs.readFile absolutePath, "utf8", (err, data) ->
+      return res.send 404, "Couldn't read file" if err?
+      res.send markdown(data)
+  else
+    res.sendfile absolutePath
+
+extractPackageMetadata = (pkg) ->
+
+  docUrl = (relativePath) -> "/packages/#{pkg.name}@#{pkg.version}/#{relativePath}"
+  otherDocs = pkg.documentationFiles.slice(1, pkg.documentationFiles.length)
+
+  metadata =
+    name: pkg.name
+    version: pkg.version
+    description: pkg.description
+    path: pkg.path
+    author:
+      name: pkg.author?.name
+      email: pkg.author?.email
+    homepage: pkg.homepage
+    bugsUrl: pkg.bugs?.url
+    licenses: pkg.licenses
+    docs: ({name: p, url: docUrl(p)} for p in pkg.documentationFiles)
+
+  return metadata
 
 app.get '/project', (req, res) ->
+  deps = (pkg for own name, pkg of basePackage.dependencies)
+  # the last one is bogus for some reason. 
+  deps = deps.slice(0, deps.length-1)
+
   res.json
     basePackage: extractPackageMetadata(basePackage)
-    dependencies: (extractPackageMetadata(pak) for name,pak of basePackage.dependencies)
-
+    dependencies: (extractPackageMetadata(pkg) for pkg in deps)
 
 
 http.createServer(app).listen app.get('port'), ->
