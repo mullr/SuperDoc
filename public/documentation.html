@@ -6,6 +6,12 @@
   </ul>
 </div>
 
-<iframe class="doc-viewer" ng-class="{'doc-viewer-short': selectedPackage.docs.length > 1}"
+
+<iframe ng-show="selectedDoc" class="doc-viewer" ng-class="{'doc-viewer-short': selectedPackage.docs.length > 1}"
   src="{{selectedDoc.url}}"></iframe> 
+
+<div ng-show="!selectedDoc">
+  <p></p>
+  No documentation found for this package. 
+</div>
 
