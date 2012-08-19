@@ -123,7 +123,7 @@ listFilesInPackage = (packageDir) ->
   files = []
   queue = [packageDir]
 
-  ignore = /(node_modules$|\/\..*|vendor$|test$)/
+  ignore = /(node_modules$|\/\..*|vendor$|test$|deps$)/
 
   while queue.length > 0
     f = queue.shift()
