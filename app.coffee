@@ -87,7 +87,7 @@ app.get /^\/packages\/(.*)/, (req, res) ->
       res.render 'markdown', html: markdown(data)
   else
     magic.detectFile absolutePath, (err, mimeType) ->
-      throw err if err?
+      return res.send 404, "Couldn't detect file MIME type" if err?
       res.set 'Content-Type', mimeType
       res.sendfile absolutePath
 
