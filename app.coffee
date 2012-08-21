@@ -65,6 +65,7 @@ Main page
 app.get '/', (req, res) ->
   res.render 'index', {version: '0.0.1'}
 
+
 ###
 Serve up package contents. A package is identified
 by a 'name@verison' string. Anything after that indicates
@@ -115,6 +116,7 @@ packageMetadata = (pkg) ->
     bugsUrl: pkg.bugs?.url
     licenses: pkg.licenses
     docs: ({name: p, url: docUrl(p)} for p in pkg.documentationFiles)
+    files: pkg.files
 
   return metadata
 

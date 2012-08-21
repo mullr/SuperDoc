@@ -24,6 +24,7 @@ module.exports.getPackageInfoFor = (baseDir, cb) ->
       allPackages = [basePackage].concat(deps)
       for pkg in allPackages
         pkg.documentationFiles = findDocFiles(pkg.path, pkg.name)
+        pkg.files = listFilesInPackage(pkg.path)
 
       cb(null, basePackage)
 
@@ -40,7 +41,7 @@ exports.hasMarkdownExtension = (filename) ->
 ###
 Recusrively list the contens of a package. Skip over subdirectories
 which aren't likely to contain things which are part of the package
-itself (like 'node_modules'). Returns an array of absolute file paths. 
+itself (like 'node_modules'). Returns an array of relative file paths. 
 
 packageDir: The base directory of the package
 ###
@@ -54,9 +55,17 @@ listFilesInPackage = (packageDir) ->
     f = queue.shift()
     continue if f.match(ignore)
 
-    files.push f
     if fs.statSync(f).isDirectory()
+      files.push f + "/"
       queue.push(path.join(f, entry)) for entry in fs.readdirSync(f)
+    else
+      files.push f
+
+  # paths should be relative to the module dir
+  files = (f.substring(packageDir.length + 1, f.length) for f in files)
+
+  # remove the first (empty) element, which is the baseDir
+  files.shift()
 
   return files
 
@@ -88,7 +97,5 @@ findDocFiles = (packageDir, packageName) ->
       docFiles.push(f) if f.toLowerCase().match(p)
 
   docFiles = _.uniq docFiles
-  # paths should be relative to the module dir
-  docFiles = (f.substring(packageDir.length + 1, f.length) for f in docFiles)
   return docFiles
 

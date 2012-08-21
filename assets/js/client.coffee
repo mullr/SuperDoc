@@ -2,24 +2,9 @@ superDoc = angular.module 'SuperDoc', ['ngResource', 'bootstrap']
 
 window.SuperDocController = ($scope, $resource, $http) ->
   $scope.project = $resource('/project').get()
-  $scope.selectedPackageDocumentationUrl = ""
 
   $scope.selectedPackage = null
-
-  $scope.tabs = [
-    name: "Documentation"
-    template: "documentation.html"
-  ,
-    name: "Package info"
-    template: "packageInfo.html"
-  ]
-
-  $scope.selectedTab = $scope.tabs[0]
-  $scope.selectTab = (tab) -> $scope.selectedTab = tab
-
-
   $scope.selectedDoc = null
-
 
   $scope.selectPackage = (pkg) ->
     $scope.selectedPackage = pkg
@@ -30,6 +15,21 @@ window.SuperDocController = ($scope, $resource, $http) ->
     
   $scope.selectDoc = (doc) ->
     $scope.selectedDoc = doc
+
+
+  $scope.tabs = [
+    name: "Documentation"
+    template: "documentation.html"
+  ,
+    name: "Package info"
+    template: "packageInfo.html"
+  ,
+    name: "Files"
+    template: "files.html"
+  ]
+
+  $scope.selectedTab = $scope.tabs[0]
+  $scope.selectTab = (tab) -> $scope.selectedTab = tab
 
 
 superDoc.filter 'prettifyHomepageUrl', () ->
