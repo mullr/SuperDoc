@@ -40,7 +40,7 @@ app.configure ->
   app.set 'view engine', 'ejs'
 
   app.use mw for mw in [
-    express.favicon()
+    express.favicon "#{__dirname}/public/images/favicon.ico"
     express.logger('dev')
     express.bodyParser()
     express.methodOverride()
