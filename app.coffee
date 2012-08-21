@@ -48,8 +48,8 @@ app.configure ->
     app.router
     connectAssets
       src: "#{__dirname}/assets"
-      includePath: ["#{__dirname}/node_modules/bootstrap/less"]
-    express.static(path.join(__dirname, 'public'))
+    express.static path.join(__dirname, 'public')
+    express.static path.join(__dirname, 'node_modules/bootstrap/img')
     express.errorHandler()
   ]
 
@@ -102,7 +102,7 @@ app.get /^\/packages\/(.*)/, (req, res) ->
 Helper for generating the json to describe a package
 ###
 packageMetadata = (pkg) ->
-  docUrl = (relativePath) -> "/packages/#{pkg.name}@#{pkg.version}/#{relativePath}"
+  packageUrl = (relativePath) -> "/packages/#{pkg.name}@#{pkg.version}/#{relativePath}"
   otherDocs = pkg.documentationFiles.slice(1, pkg.documentationFiles.length)
 
   metadata =
@@ -116,7 +116,8 @@ packageMetadata = (pkg) ->
     homepage: pkg.homepage
     bugsUrl: pkg.bugs?.url
     licenses: pkg.licenses
-    docs: ({name: p, url: docUrl(p)} for p in pkg.documentationFiles)
+    docs: ({name: f, url: packageUrl(f)} for f in pkg.documentationFiles)
+    fileBaseUrl: packageUrl("")
     files: pkg.files
 
   return metadata
