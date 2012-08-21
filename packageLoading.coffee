@@ -29,10 +29,6 @@ module.exports.getPackageInfoFor = (baseDir, cb) ->
 
       cb(null, basePackage)
 
-endsWith = (str, suffix) ->
-  str.indexOf(suffix, str.length - suffix.length) isnt -1
-
-
 
 ###
 Recusrively list the contens of a package. Skip over subdirectories
