@@ -10,6 +10,7 @@ connectAssets = require 'connect-assets'
 mmm   = new require('mmmagic')
 magic = new mmm.Magic(mmm.MAGIC_MIME)
 
+util           = require './util'
 packageLoading = require './packageLoading'
 
 
@@ -86,7 +87,7 @@ app.get /^\/packages\/(.*)/, (req, res) ->
 
   absolutePath = path.join pkg.path, relativePath
 
-  if packageLoading.hasMarkdownExtension(relativePath)
+  if util.hasMarkdownExtension(relativePath)
     fs.readFile absolutePath, "utf8", (err, data) ->
       return res.send 404, "Couldn't read file" if err?
       res.render 'markdown', html: markdown(data)

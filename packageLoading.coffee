@@ -3,6 +3,7 @@ fs   = require 'fs'
 path = require 'path'
 _    = require 'underscore'
 
+util = require './util'
 ###
 Load package info for the given directory. Packages are normal
 npm objects, but they have an additional 'documentationFiles' property
@@ -32,11 +33,6 @@ endsWith = (str, suffix) ->
   str.indexOf(suffix, str.length - suffix.length) isnt -1
 
 
-markdownExtension = "\\.(md|mkdn|mdown|markdown)$"
-markdownExtensionRegex = new RegExp(markdownExtension)
-
-exports.hasMarkdownExtension = (filename) ->
-  return filename.match(markdownExtensionRegex)?
 
 ###
 Recusrively list the contens of a package. Skip over subdirectories
@@ -82,12 +78,12 @@ findDocFiles = (packageDir, packageName) ->
 
   # a list of files to look for, with the highest-priority items first. 
   patterns =  [
-    new RegExp "readme#{markdownExtension}"
-    new RegExp "#{packageName}#{markdownExtension}"
+    new RegExp "readme#{util.markdownExtension}"
+    new RegExp "#{packageName}#{util.markdownExtension}"
     /index\.html$/
     /readme\.txt$/
     /readme/
-    new RegExp "docs\\/.*#{markdownExtension}"
+    new RegExp "docs\\/.*#{util.markdownExtension}"
   ]
   patterns = _.flatten patterns
 
