@@ -5,6 +5,8 @@ fs       = require 'fs'
 markdown = require 'marked'
 open     = require 'open'
 
+connectAssets = require 'connect-assets'
+
 mmm   = new require('mmmagic')
 magic = new mmm.Magic(mmm.MAGIC_MIME)
 
@@ -43,7 +45,9 @@ app.configure ->
     express.bodyParser()
     express.methodOverride()
     app.router
-    require('connect-assets') {src: "#{__dirname}/assets"}
+    connectAssets
+      src: "#{__dirname}/assets"
+      includePath: ["#{__dirname}/node_modules/bootstrap/less"]
     express.static(path.join(__dirname, 'public'))
     express.errorHandler()
   ]
