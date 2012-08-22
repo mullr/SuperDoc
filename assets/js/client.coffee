@@ -1,11 +1,41 @@
 superDoc = angular.module 'SuperDoc', ['ngResource', 'bootstrap']
 
+contentViewers = [
+  pattern: /text\/plain/
+  template: "plainTextViewer.html"
+,
+  pattern: /text\/html/
+  template: "htmlViewer.html"
+,
+  pattern: /.*/
+  template: "plainTextViewer.html"
+]
+
+
 superDoc.controller "SuperDocController", ($scope, $resource, $http) ->
   $scope.project = $resource('/project').get()
-  $scope.selectedContentUrl = null
+  $scope.content = null
+  $scope.contentViewer = null
   $scope.selectedNode = null
   $scope.pathToSelectedNode = []
   $scope.selectedFileNode = null
+
+
+  useContentAt = (url) ->
+    if not url?
+      $scope.content = null
+      return
+
+    req = $http.get(url)
+    req.success (data, status, headers, config) ->
+      contentType = headers("Content-Type")
+      for viewer in contentViewers
+        if contentType.match(viewer.pattern)
+          $scope.contentViewer = viewer.template
+          break
+
+      $scope.content = data
+
 
   $scope.$on 'selectPackage', (e,pkg) ->
     $scope.selectedPackage = pkg
@@ -16,15 +46,14 @@ superDoc.controller "SuperDocController", ($scope, $resource, $http) ->
 
   $scope.$on 'selectNode', (e,clickedNode) ->
     if clickedNode.isDirectory()
-      $scope.selectedContentUrl = null
+      useContentAt(null)
       $scope.pathToSelectedNode.push $scope.selectedNode if $scope.selectedNode?
       $scope.selectedNode = clickedNode
       $scope.selectedFileNode = null
     else
       pathArray = $scope.pathToSelectedNode.concat [$scope.selectedNode, clickedNode]
       path = (n.name for n in pathArray).join('/')
-      contentUrl = $scope.selectedPackage.fileBaseUrl + path
-      $scope.selectedContentUrl = contentUrl
+      useContentAt($scope.selectedPackage.fileBaseUrl + path)
       $scope.selectedFileNode = clickedNode
 
   $scope.$on 'goBackToNode', (e,node) ->
