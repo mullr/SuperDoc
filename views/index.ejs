@@ -16,14 +16,61 @@
 <div class="container-fluid">
 
   <div class="row-fluid">
-    <div ng-controller="PanelListViewController">
-      <div ng-repeat="panel in panels" ng-include="panel.template"></div>
+
+    <div class="span2">
+      <div class="well sidebar-nav">
+        <ul class="nav nav-list">
+
+          <li class="nav-header">This Package</li>
+
+          <li ng-class="{active: selectedPackage == project.basePackage}" >
+          <a href="#" ng-click="$emit('selectPackage', project.basePackage)"> {{project.basePackage.name}}@{{project.basePackage.version}}</a>
+          </li>
+
+          <li class="nav-header">Dependencies</li>
+          <li ng-repeat="pkg in project.dependencies" ng-class="{active: selectedPackage == pkg}" >
+          <a href="#" ng-click="$emit('selectPackage', pkg)">{{pkg.name}}@{{pkg.version}}</a>
+          </li>
+
+          <li class="nav-header">This is SuperDoc <%= version %></li>
+
+
+        </ul>
+      </div><!--/.well -->
+    </div><!--/span-->
+
+    <div class="span2" ng-show="selectedPackage">
+      <ul class="breadcrumb" >
+
+        <li ng-repeat="node in pathToSelectedNode">
+        <a ng-click="$emit('goBackToNode', node)">{{node.breadcrumbName()}}</a> <span class="divider">/</span>
+        </li>
+
+        <li class="active">{{selectedNode.breadcrumbName()}}</li>
+
+      </ul> 
+
+
+      <div class="directory-panel">
+        <table>
+
+          <tr ng-repeat="child in selectedNode.children" 
+            ng-class="{info: child == selectedFileNode}"
+            ng-click="$emit('selectNode', child)">
+
+            <td>{{child.displayName()}}</td>
+          </tr>
+
+        </table>
+      </div>
+
     </div>
+
+    <div ng-include="selectedContentUrl" autoscroll="true" class="span7 content"></div>
   </div>
 
 </div>
 
-<div ng-include="selectedContentUrl" class="content"></div>
 
 </body>
 </html>

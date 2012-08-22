@@ -3,64 +3,37 @@ superDoc = angular.module 'SuperDoc', ['ngResource', 'bootstrap']
 superDoc.controller "SuperDocController", ($scope, $resource, $http) ->
   $scope.project = $resource('/project').get()
   $scope.selectedContentUrl = null
+  $scope.selectedNode = null
+  $scope.pathToSelectedNode = []
+  $scope.selectedFileNode = null
 
-  $scope.$on 'showContent', (e,url) -> $scope.selectedContentUrl = url
-
-
-superDoc.controller "PanelListViewController", ($scope, $controller) ->
-  $scope.panels = [ {template: 'packageListPanel.html', options:{}} ]
-  $scope.selectedPackage = null
-
-  findPanel = (panel) -> for p,i in $scope.panels
-    return i if panel is p
-
-  # maintain the selected package here so all panes can have access to it
-  $scope.$on 'selectedPackageChanged', (e,pkg) ->
+  $scope.$on 'selectPackage', (e,pkg) ->
     $scope.selectedPackage = pkg
+    $scope.selectedNode = createTreeFromListOfPaths(pkg.files)
+    $scope.pathToSelectedNode = []
+    $scope.selectedContentUrl = null
+    $scope.selectedFileNode = null
 
-  $scope.$on 'showPanel', (e, panelOptions) ->
-    {parentPanel, template} = panelOptions
-
-    indexOfLastPanelToKeep = findPanel(parentPanel)
-    $scope.panels = $scope.panels.slice(0, indexOfLastPanelToKeep + 1)
-
-    # be sure to pass through most stuff, so the panel itself can get custom options
-    delete $scope.panels.parentPanel
-    $scope.panels.push panelOptions
-
-
-superDoc.controller "PackageListController", ($scope) ->
-  $scope.selectPackage = (pkg) ->
-    $scope.$emit 'selectedPackageChanged', pkg
-    $scope.$emit 'showPanel',
-      parentPanel: $scope.panel
-      template:    'directoryPanel.html'
-      node:        createTreeFromListOfPaths(pkg.files)
-
-
-superDoc.controller "DirectoryPanelController", ($scope) ->
-  $scope.node         = $scope.panel.node
-  $scope.selectedChild = null
-
-  $scope.selectNode   = (child) ->
-    $scope.selectedChild = child
-    if child.isDirectory()
-      $scope.$emit 'showContent', null
-      $scope.$emit 'showPanel',
-        parentPanel: $scope.panel
-        template:    'directoryPanel.html'
-        node:        child
+  $scope.$on 'selectNode', (e,clickedNode) ->
+    if clickedNode.isDirectory()
+      $scope.selectedContentUrl = null
+      $scope.pathToSelectedNode.push $scope.selectedNode if $scope.selectedNode?
+      $scope.selectedNode = clickedNode
+      $scope.selectedFileNode = null
     else
-      contentUrl = $scope.selectedPackage.fileBaseUrl + child.pathFromRoot().join('/')
-      $scope.$emit 'showContent', contentUrl
-      $scope.$emit 'showPanel',
-        parentPanel: $scope.panel
-        template:    null
+      pathArray = $scope.pathToSelectedNode.concat [$scope.selectedNode, clickedNode]
+      path = (n.name for n in pathArray).join('/')
+      contentUrl = $scope.selectedPackage.fileBaseUrl + path
+      $scope.selectedContentUrl = contentUrl
+      $scope.selectedFileNode = clickedNode
 
-
+  $scope.$on 'goBackToNode', (e,node) ->
+    path = $scope.pathToSelectedNode
+    $scope.pathToSelectedNode = path.slice(0, path.indexOf(node))
+    $scope.selectedNode = node
 
 class FileNode
-  constructor: (@name, @parent) ->
+  constructor: (@name) ->
     @children = {}
     @selected = false
 
@@ -100,44 +73,13 @@ class FileNode
 
   isRoot: -> @name is ""
 
-  pathFromRoot: ->
-    return [] if @isRoot()
-    return @parent.pathFromRoot().concat [@name]
+  breadcrumbName: ->
+    return "_" if @isRoot()
+    return @name
 
 createTreeFromListOfPaths = (paths) ->
   root = new FileNode("")
   root.addChild p for p in paths
   return root
 
-
-window.FileSelectorController = ($scope) ->
-  root = createTreeFromListOfPaths($scope.selectedPackage.files)
-  root.selected = true
-
-  $scope.panes = [root]
-
-  indexOfPaneWhichContains = (node) ->
-    for pane, paneIndex in $scope.panes
-      for own k,v of pane.children
-        return [pane,paneIndex] if v is node
-    return null
-
-  $scope.selectNode = (clickedNode) ->
-    [lastPaneToKeep, indexOfLastPaneToKeep] = indexOfPaneWhichContains(clickedNode)
-
-    panesWhichWillGoAway = $scope.panes.slice(indexOfLastPaneToKeep + 1, $scope.panes.length)
-    p.selectChild(null) for p in panesWhichWillGoAway
-
-    lastPaneToKeep.selectChild(clickedNode)
-
-    newPanes = $scope.panes.slice(0, indexOfLastPaneToKeep + 1)
-    newPanes.push clickedNode if clickedNode.isDirectory()
-    $scope.panes = newPanes
-
-    if clickedNode.isFile()
-      selectionPath = (p.name for p in $scope.panes).join('/')
-      selectionPath += '/' + clickedNode.name
-      $scope.parent.selectedContentUrl = $scope.selectedPackage.fileBaseUrl + selectionPath
-    else
-      $scope.parent.selectedContentUrl = null
 
