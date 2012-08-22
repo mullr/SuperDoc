@@ -1,40 +1,66 @@
 superDoc = angular.module 'SuperDoc', ['ngResource', 'bootstrap']
 
-window.SuperDocController = ($scope, $resource, $http) ->
+superDoc.controller "SuperDocController", ($scope, $resource, $http) ->
   $scope.project = $resource('/project').get()
+  $scope.selectedContentUrl = null
 
+  $scope.$on 'showContent', (e,url) -> $scope.selectedContentUrl = url
+
+
+superDoc.controller "PanelListViewController", ($scope, $controller) ->
+  $scope.panels = [ {template: 'packageListPanel.html', options:{}} ]
   $scope.selectedPackage = null
-  $scope.selectedDoc = null
 
-  $scope.selectPackage = (pkg) ->
+  findPanel = (panel) -> for p,i in $scope.panels
+    return i if panel is p
+
+  # maintain the selected package here so all panes can have access to it
+  $scope.$on 'selectedPackageChanged', (e,pkg) ->
     $scope.selectedPackage = pkg
 
-    if(pkg.docs.length > 0)
-      $scope.selectDoc(pkg.docs[0])
+  $scope.$on 'showPanel', (e, panelOptions) ->
+    {parentPanel, template} = panelOptions
+
+    indexOfLastPanelToKeep = findPanel(parentPanel)
+    $scope.panels = $scope.panels.slice(0, indexOfLastPanelToKeep + 1)
+
+    # be sure to pass through most stuff, so the panel itself can get custom options
+    delete $scope.panels.parentPanel
+    $scope.panels.push panelOptions
+
+
+superDoc.controller "PackageListController", ($scope) ->
+  $scope.selectPackage = (pkg) ->
+    $scope.$emit 'selectedPackageChanged', pkg
+    $scope.$emit 'showPanel',
+      parentPanel: $scope.panel
+      template:    'directoryPanel.html'
+      node:        createTreeFromListOfPaths(pkg.files)
+
+
+superDoc.controller "DirectoryPanelController", ($scope) ->
+  $scope.node         = $scope.panel.node
+  $scope.selectedChild = null
+
+  $scope.selectNode   = (child) ->
+    $scope.selectedChild = child
+    if child.isDirectory()
+      $scope.$emit 'showContent', null
+      $scope.$emit 'showPanel',
+        parentPanel: $scope.panel
+        template:    'directoryPanel.html'
+        node:        child
     else
-      $scope.selectDoc(null)
+      contentUrl = $scope.selectedPackage.fileBaseUrl + child.pathFromRoot().join('/')
+      $scope.$emit 'showContent', contentUrl
+      $scope.$emit 'showPanel',
+        parentPanel: $scope.panel
+        template:    null
 
-   
-  $scope.selectDoc = (doc) ->
-    $scope.selectedDoc = doc
 
-
-  $scope.tabs = [
-    name: "Documentation"
-    template: "documentation.html"
-  ,
-    name: "Package info"
-    template: "packageInfo.html"
-  ,
-    name: "Files"
-    template: "files.html"
-  ]
-
-  $scope.selectedTab = $scope.tabs[0]
-  $scope.selectTab = (tab) -> $scope.selectedTab = tab
 
 class FileNode
-  constructor: (@name) ->
+  constructor: (@name, @parent) ->
     @children = {}
     @selected = false
 
@@ -58,7 +84,7 @@ class FileNode
 
     nextPathSegment = pathSegments[0]
     if not @children[nextPathSegment]?
-      @children[nextPathSegment] = new FileNode(nextPathSegment)
+      @children[nextPathSegment] = new FileNode(nextPathSegment, this)
 
     # remove the first path segment and recurse
     pathSegments.shift()
@@ -72,6 +98,11 @@ class FileNode
 
   isFile: -> not (@isDirectory())
 
+  isRoot: -> @name is ""
+
+  pathFromRoot: ->
+    return [] if @isRoot()
+    return @parent.pathFromRoot().concat [@name]
 
 createTreeFromListOfPaths = (paths) ->
   root = new FileNode("")
@@ -84,7 +115,6 @@ window.FileSelectorController = ($scope) ->
   root.selected = true
 
   $scope.panes = [root]
-  $scope.selectedFileUrl
 
   indexOfPaneWhichContains = (node) ->
     for pane, paneIndex in $scope.panes
@@ -107,9 +137,7 @@ window.FileSelectorController = ($scope) ->
     if clickedNode.isFile()
       selectionPath = (p.name for p in $scope.panes).join('/')
       selectionPath += '/' + clickedNode.name
-      $scope.selectedFileUrl = $scope.selectedPackage.fileBaseUrl + selectionPath
+      $scope.parent.selectedContentUrl = $scope.selectedPackage.fileBaseUrl + selectionPath
     else
-      $scope.selectedFileUrl = null
-
-
+      $scope.parent.selectedContentUrl = null
 

@@ -90,7 +90,7 @@ app.get /^\/packages\/(.*)/, (req, res) ->
   if util.hasMarkdownExtension(relativePath)
     fs.readFile absolutePath, "utf8", (err, data) ->
       return res.send 404, "Couldn't read file" if err?
-      res.render 'markdown', html: markdown(data)
+      res.send markdown(data)
   else
     magic.detectFile absolutePath, (err, mimeType) ->
       return res.send 404, "Couldn't detect file MIME type" if err?
@@ -103,7 +103,6 @@ Helper for generating the json to describe a package
 ###
 packageMetadata = (pkg) ->
   packageUrl = (relativePath) -> "/packages/#{pkg.name}@#{pkg.version}/#{relativePath}"
-  otherDocs = pkg.documentationFiles.slice(1, pkg.documentationFiles.length)
 
   metadata =
     name: pkg.name
@@ -116,7 +115,6 @@ packageMetadata = (pkg) ->
     homepage: pkg.homepage
     bugsUrl: pkg.bugs?.url
     licenses: pkg.licenses
-    docs: ({name: f, url: packageUrl(f)} for f in pkg.documentationFiles)
     fileBaseUrl: packageUrl("")
     files: pkg.files
 

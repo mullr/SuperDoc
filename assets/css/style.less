@@ -3,66 +3,46 @@
 @iconSpritePath:          "/glyphicons-halflings.png";
 @iconWhiteSpritePath:     "/glyphicons-halflings-white.png";
 
-html, body {
-  height: 100%;
-  overflow: hidden; // stop scroll bounce
-}
-
 body {
-  margin: 0;
   padding-top: 9px;
 }
 
-
-.sidebar-nav {
-  padding: 9px 0;
+div.content {
+  margin: 20px;
 }
 
-.doc-list-nav {
-  height: 40px;
-  overflow: hidden;
+div.package-list-panel {
+  margin-right: 10px;
+  overflow: auto;
+  height: 250px;
+
+  table {
+    .table;
+    .table-condensed;
+    .table-bordered;
+    .table-hover;
+
+    background: @grayLighter;
+
+    tr.heading {
+      background: white;
+      font-variant:small-caps;
+      font-weight: bold;
+    }
+  }
 }
 
-.plainTextContent {
-  background-color: white;
-  border: none
+div.directory-panel {
+  margin-right: 10px;
+
+  overflow: auto;
+  height: 250px;
+
+  table {
+    .table;
+    .table-condensed;
+    .table-bordered;
+    .table-hover;
+  }
 }
-
-.package-tabs {
-  margin-bottom: 1px;
-}
-
-.doc-tabs {
- margin-top: 3px;
- margin-pottom: 1px;
-}
-
-.doc-viewer {
-  width: 100%;
-  height: 100%;
-  border: 0px;
-
-  // use these to pull in the bottom of the iframe
-  border-bottom: 46px solid white;
-  box-sizing: border-box;
-}
-
-
-// Need to pull in the bottom more when we're showing the
-// sub nav for additional documents
-.doc-viewer-short {
-  border-bottom: 86px solid white;
-}
-
-.file-selector {
-  padding-top: 10px;
-}
-
-table.file-pane {
-  .table;
-  .table-condensed;
-  .table-bordered;
-  .table-hover;
-}
-
 

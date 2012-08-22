@@ -15,44 +15,15 @@
 
 <div class="container-fluid">
 
-
   <div class="row-fluid">
-    <div class="span3">
-      <div class="well sidebar-nav">
-
-        <ul class="nav nav-list">
-          <li class="nav-header">This Package</li>
-          <li ng-class="{active: selectedPackage == project.basePackage}" >
-          <a href="#" ng-click="selectPackage(project.basePackage)"> {{project.basePackage.name}}@{{project.basePackage.version}}</a>
-          </li>
-
-
-          <li class="nav-header">Dependencies</li>
-          <li ng-repeat="pak in project.dependencies" ng-class="{active: selectedPackage == pak}" >
-          <a href="#" ng-click="selectPackage(pak)"> {{pak.name}}@{{pak.version}}</a>
-          </li>
-
-          <li class="divider"></li>
-          <li class="nav-header"> This is SuperDoc version <%= version %> </li>
-
-        </ul>
-      </div><!--/.well -->
-    </div><!--/span-->
-
-
-    <div class="span9" ng-show="selectedPackage">
-
-      <ul class="nav nav-tabs package-tabs">
-        <li ng-repeat="tab in tabs" ng-click="selectTab(tab)" ng-class="{active: tab == selectedTab}">
-        <a href="#">{{tab.name}}</a>
-        </li>
-      </ul> 
-
-      <div ng-include="selectedTab.template"></div>
+    <div ng-controller="PanelListViewController">
+      <div ng-repeat="panel in panels" ng-include="panel.template"></div>
     </div>
-  </div><!--/row-->
-</div><!--/.fluid-container-->
+  </div>
 
+</div>
+
+<div ng-include="selectedContentUrl" class="content"></div>
 
 </body>
 </html>

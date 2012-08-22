@@ -6,10 +6,7 @@ _    = require 'underscore'
 util = require './util'
 ###
 Load package info for the given directory. Packages are normal
-npm objects, but they have an additional 'documentationFiles' property
-like this:
-
-[ {name: 'Readme.md', path: 'docs/Readme.md'} ]
+npm objects
 
 Callback is (err, basePackage)
 ###
@@ -24,7 +21,6 @@ module.exports.getPackageInfoFor = (baseDir, cb) ->
       deps = (pkg for own name,pkg of basePackage.dependencies)
       allPackages = [basePackage].concat(deps)
       for pkg in allPackages
-        pkg.documentationFiles = findDocFiles(pkg.path, pkg.name)
         pkg.files = listFilesInPackage(pkg.path)
 
       cb(null, basePackage)
@@ -61,33 +57,4 @@ listFilesInPackage = (packageDir) ->
 
   return files
 
-
-###
-Find all the documentation files in the given package directory. 
-
-packageDir: the package's base directory. 
-packageName: the name of the package (used by the heuristic)
-return: a list of paths relative to packageDir
-###
-findDocFiles = (packageDir, packageName) ->
-  allFiles = listFilesInPackage(packageDir)
-
-  # a list of files to look for, with the highest-priority items first. 
-  patterns =  [
-    new RegExp "readme#{util.markdownExtension}"
-    new RegExp "#{packageName}#{util.markdownExtension}"
-    /index\.html$/
-    /readme\.txt$/
-    /readme/
-    new RegExp "docs\\/.*#{util.markdownExtension}"
-  ]
-  patterns = _.flatten patterns
-
-  docFiles = []
-  for p in patterns
-    for f in allFiles
-      docFiles.push(f) if f.toLowerCase().match(p)
-
-  docFiles = _.uniq docFiles
-  return docFiles
 
