@@ -27,6 +27,13 @@
           <a href="#" ng-click="$emit('selectPackage', project.basePackage)"> {{project.basePackage.name}}@{{project.basePackage.version}}</a>
           </li>
 
+
+          <li class="nav-header">Node</li>
+          <li ng-class="{active: selectedPackage == nodeDocs}" >
+          <a href="#" ng-click="$emit('selectPackage', nodeDocs)"> node@{{nodeDocs.version}}</a>
+          </li>
+
+
           <li class="nav-header">Dependencies</li>
           <li ng-repeat="pkg in project.dependencies" ng-class="{active: selectedPackage == pkg}" >
           <a href="#" ng-click="$emit('selectPackage', pkg)">{{pkg.name}}@{{pkg.version}}</a>

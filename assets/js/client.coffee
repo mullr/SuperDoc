@@ -14,6 +14,7 @@ contentViewers = [
 
 superDoc.controller "SuperDocController", ($scope, $resource, $http) ->
   $scope.project = $resource('/project').get()
+  $scope.nodeDocs = $resource('/nodeInfo').get()
   $scope.content = null
   $scope.contentViewer = null
   $scope.selectedNode = null

@@ -12,16 +12,22 @@ magic = new mmm.Magic(mmm.MAGIC_MIME)
 
 util           = require './util'
 packageLoading = require './packageLoading'
-
+nodeDocs       = require './nodeDocs'
 
 basePackage = null
-packageLoading.getPackageInfoFor process.cwd(), (err, pkg) ->
-  if err?
-    console.log err
-    process.exit 1
+nodeDocFiles = null
+main = ->
+  nodeDocs.load (err, docFiles) ->
+    console.log err if err?  # continue even if this failed; could be offline, for example
+    nodeDocFiles = docFiles
 
-  basePackage = pkg
-  startServer()
+    packageLoading.getPackageInfoFor process.cwd(), (err, pkg) ->
+      if err?
+        console.log err
+        process.exit 1
+
+      basePackage = pkg
+      startServer()
 
 # BFS for a package of the given name and version
 findPackage = (name, version) ->
@@ -130,7 +136,24 @@ app.get '/project', (req, res) ->
   # the last one is bogus for some reason. 
   deps = deps.slice(0, deps.length-1)
 
+
+
   res.json
     basePackage: packageMetadata(basePackage)
     dependencies: (packageMetadata(pkg) for pkg in deps)
 
+app.get '/nodeInfo', (req, res) ->
+  res.json
+    version: process.version
+    fileBaseUrl: '/nodeDocs'
+    files: nodeDocFiles
+
+app.get '/nodeDocs/:file', (req, res) ->
+  file = req.params.file
+  absolutePath = path.join(nodeDocs.dir, file)
+  fs.readFile absolutePath, "utf8", (err, data) ->
+    return res.send 404, "Couldn't read file" if err?
+    res.send markdown(data)
+
+
+main()
