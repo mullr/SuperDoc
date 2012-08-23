@@ -11,30 +11,14 @@ body {
 .sidebar-nav {
   padding: 9px 0;
 }
-div.content {
-  margin: 20px;
+
+// hack to pull of first heading of the main content so 
+// it lines up with the breadcrumbs bar
+.content>div>h1:first-child {
+  margin-top: -2px;
 }
 
-div.package-list-panel {
-  margin-right: 10px;
-
-  table {
-    .table;
-    .table-condensed;
-    .table-bordered;
-    .table-hover;
-
-    background: @grayLighter;
-
-    tr.heading {
-      background: white;
-      font-variant:small-caps;
-      font-weight: bold;
-    }
-  }
-}
-
-div.directory-panel {
+div.file-list {
   table {
     .table;
     .table-condensed;
