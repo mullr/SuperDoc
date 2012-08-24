@@ -5,6 +5,7 @@ Since we're not yet in npm, do this for now to get started:
 ```
 git clone https://github.com/mullr/SuperDoc
 cd SuperDoc
+npm install
 npm link
 ```
 
